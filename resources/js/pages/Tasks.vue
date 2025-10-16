@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { fetchTasks, createTask, updateTask, deleteTask, getUser } from '../lib/api';
+import { useTasksStore } from '@/stores/tasks';
 
-const tasks = ref([] as any[]);
+const store = useTasksStore();
 const title = ref('');
 const description = ref('');
 const error = ref<string | null>(null);
@@ -15,7 +16,7 @@ async function load() {
     // load tasks only if user is authenticated
     if (!user.value) return;
     const res = await fetchTasks();
-    if (res.status === 200) tasks.value = res.body.data || res.body;
+    if (res.status === 200) store.setTasks(res.body);
     else error.value = 'Unable to fetch tasks';
 }
 
@@ -94,7 +95,7 @@ onMounted(async () => {
     </div>
 
     <ul class="space-y-2">
-        <li v-for="t in tasks" :key="t.id" class="p-3 border rounded flex justify-between items-center">
+        <li v-for="t in store.items" :key="t.id" class="p-3 border rounded flex justify-between items-center">
             <div class="flex-1">
                 <!-- Normal View -->
                 <div v-if="editingId !== t.id">
