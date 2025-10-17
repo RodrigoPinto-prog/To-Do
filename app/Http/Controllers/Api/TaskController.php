@@ -11,31 +11,40 @@ use Illuminate\Http\Request;
 
 class TaskController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('auth:sanctum');
-    }
-
     public function index(Request $request)
     {
+        /**
+         * List tasks for the authenticated user with pagination.
+         * Returns a paginated TaskResource collection.
+         */
         $tasks = $request->user()->tasks()->latest()->paginate(15);
         return TaskResource::collection($tasks)->response()->setStatusCode(200);
     }
 
     public function store(StoreTaskRequest $request)
     {
+        /**
+         * Create a new task for the authenticated user.
+         * Validation is handled by StoreTaskRequest.
+         */
         $task = $request->user()->tasks()->create($request->validated());
         return (new TaskResource($task))->response()->setStatusCode(201);
     }
 
     public function show(Request $request, Task $task)
     {
+        /**
+         * Return a single task after authorization check.
+         */
         $this->authorizeTask($request->user()->id, $task);
         return (new TaskResource($task))->response()->setStatusCode(200);
     }
 
     public function update(UpdateTaskRequest $request, Task $task)
     {
+        /**
+         * Update a task after authorization. Validation via UpdateTaskRequest.
+         */
         $this->authorizeTask($request->user()->id, $task);
         $task->update($request->validated());
         return (new TaskResource($task))->response()->setStatusCode(200);
@@ -43,6 +52,9 @@ class TaskController extends Controller
 
     public function destroy(Request $request, Task $task)
     {
+        /**
+         * Delete a task after authorization.
+         */
         $this->authorizeTask($request->user()->id, $task);
         $task->delete();
         return response()->json(['message' => 'Task deleted'], 200);

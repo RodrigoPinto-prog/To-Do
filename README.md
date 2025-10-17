@@ -1,55 +1,49 @@
-# To-Do API (Laravel)
+# To-Do (Mini Task Manager)
 
-This project adds a simple Task API with authentication using Laravel Sanctum.
+This repository contains a small collaborative task manager built with Laravel (API) and Vue 3 (SPA) using Inertia and Vite.
 
-## Models
-- User (existing)
-- Task
-  - title: string
-  - description: text (nullable)
-  - status: enum [pending, in_progress, done]
+## Overview
+- Laravel backend with Sanctum authentication.
+- Vue 3 frontend (Vite, Inertia) and Pinia for state management.
+- Pest for automated tests (feature + unit tests included).
 
-## Endpoints
-- POST /api/register
-  - body: { name?, email, password }
-  - returns: { user, token }
+## Local setup
+1. Copy `.env.example` to `.env` and set DB credentials.
+2. Install PHP dependencies:
 
-- POST /api/login
-  - body: { email, password }
-  - returns: { user, token }
+   composer install
 
-- POST /api/logout (auth)
-  - header: Authorization: Bearer <token>
-  - returns: { message }
+3. Install Node dependencies and build assets:
 
-- GET /api/tasks (auth)
-  - returns paginated tasks belonging to the authenticated user
+   npm install
+   npm run dev
 
-- POST /api/tasks (auth)
-  - body: { title, description?, status }
-  - returns created task
+4. Run migrations and seed (if you want sample data):
 
-- GET /api/tasks/{id} (auth)
-  - returns a single task (must belong to user)
+   php artisan migrate
+   php artisan db:seed
 
-- PUT/PATCH /api/tasks/{id} (auth)
-  - body: { title?, description?, status? }
-  - returns updated task
+5. Serve the application:
 
-- DELETE /api/tasks/{id} (auth)
-  - deletes the task
+   php artisan serve or npm run dev
 
-## Validation
-- title: required, max 255
-- status: one of pending, in_progress, done
-- password: min 8
+   The SPA is served via Vite at `https://vite.to-do.test:5173/` (configured when using Vite dev server).
 
-## Run locally
-1. Install dependencies: `composer install` and `npm install` if needed.
-2. Copy `.env.example` to `.env` and set DB config.
-3. Run migrations: `php artisan migrate`
-4. Run tests: `php artisan test`
+## Tests
+Run Pest tests:
 
-## Notes
-- Authentication uses Laravel Sanctum token API.
-- JSON responses are returned via `TaskResource` for consistent formatting.
+```
+./vendor/bin/pest
+```
+
+Tests include feature tests for authorization, CRUD operations, validation and pagination.
+
+## Notes and implementation details
+- Authentication is handled with Laravel Sanctum and token-based API access. The frontend stores the token in `localStorage`.
+- Pagination is implemented in the backend using Eloquent's `paginate(15)` and the API returns a paginated `TaskResource` collection.
+- Pinia is used to store tasks and metadata (`resources/js/stores/tasks.ts`).
+- Frontend components:
+  - `resources/js/Components/TaskForm.vue` - reusable task creation form
+  - `resources/js/Components/TaskItem.vue` - reusable task display and inline edit
+
+*** End of README ***
