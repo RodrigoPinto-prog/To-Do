@@ -17,7 +17,7 @@ class TaskController extends Controller
          * List tasks for the authenticated user with pagination.
          * Returns a paginated TaskResource collection.
          */
-        $tasks = $request->user()->tasks()->latest()->paginate(15);
+        $tasks = $request->user()->tasks()->latest()->paginate(5);
         return TaskResource::collection($tasks)->response()->setStatusCode(200);
     }
 

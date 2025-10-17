@@ -9,6 +9,36 @@ const store = useTasksStore();
 const error = ref<string | null>(null);
 const user = ref<any | null>(null);
 
+// Array of page numbers used to render pagination buttons. Built from
+// the `meta.last_page` value provided by the backend paginator.
+const pages = ref<number[]>([]);
+
+/**
+ * Build the `pages` array from the store meta. If `last_page` is missing
+ * the pages array becomes empty. This helper is deliberately simple
+ * — for large numbers of pages a sliding window would be preferred.
+ */
+function updatePages() {
+    const last = store.meta?.last_page || 0;
+    pages.value = Array.from({ length: last }, (_, i) => i + 1);
+}
+
+/**
+ * Navigate to a given page number.
+ * Guard clauses prevent invalid requests and avoid re-fetching the
+ * same page. After fetching we rebuild the `pages` array because
+ * pagination metadata can change when items are added/removed.
+ */
+function goto(page: number) {
+    if (page < 1 || page === store.page) return;
+    store.fetch(page).then(() => updatePages());
+}
+
+/**
+ * Load the first page of tasks from the server. This is intentionally
+ * only performed for authenticated users — guests do not have tasks.
+ * Errors are reported via the `error` ref which the template displays.
+ */
 async function load() {
     // load tasks only if user is authenticated
     if (!user.value) return;
@@ -17,19 +47,24 @@ async function load() {
     else error.value = 'Unable to fetch tasks';
 }
 
-// The low-level create/update/delete actions are handled inline by the
-// TaskForm and TaskItem components and call the API directly. We keep
-// `load()` to refresh state from server.
+// Note on component responsibilities:
+// - TaskForm emits a `create` event which calls createTask and then
+//   refreshes the list via `load()`.
+// - TaskItem emits `edit`, `delete`, and `status-change` events which
+//   call the respective API helpers and then call `load()` to refresh.
 
 onMounted(async () => {
-    // detect user
+    // detect user; getUser returns 200 when the user is authenticated.
     const res = await getUser();
     if (res.status === 200) {
+        // API may wrap user inside { data: user }
         user.value = res.body?.data || res.body;
     } else {
         user.value = null;
     }
+    // load user tasks and build pagination controls
     await load();
+    updatePages();
 });
 </script>
 
@@ -88,6 +123,14 @@ onMounted(async () => {
                 "
             />
         </ul>
+        <!-- Pagination controls -->
+        <div v-if="store.meta && store.meta.last_page" class="mt-4 flex items-center justify-center gap-2">
+            <button @click="goto(store.page - 1)" :disabled="store.page <= 1" class="rounded border px-3 py-1">Previous</button>
+            <template v-for="p in pages" :key="p">
+                <button @click="goto(p)" :class="{ 'font-bold': store.page === p }" class="px-2">{{ p }}</button>
+            </template>
+            <button @click="goto(store.page + 1)" :disabled="store.page >= store.meta.last_page" class="rounded border px-3 py-1">Next</button>
+        </div>
     </div>
 </template>
 
