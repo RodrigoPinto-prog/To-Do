@@ -54,17 +54,15 @@ export const useTasksStore = defineStore('tasks', {
             }
         },
 
-        // Wrapper around createTask API helper. Returns API response.
+        // Wrapper around createTask API helper. Returns API response. Same thing for update/delete.
         async create(payload: any) {
             return createTask(payload);
         },
 
-        // Wrapper around updateTask API helper. Returns API response.
         async update(id: number, payload: any) {
             return updateTask(id, payload);
         },
 
-        // Wrapper around deleteTask API helper. Returns API response.
         async remove(id: number) {
             return deleteTask(id);
         },
