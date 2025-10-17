@@ -45,5 +45,3 @@ Tests include feature tests for authorization, CRUD operations, validation and p
 - Frontend components:
   - `resources/js/Components/TaskForm.vue` - reusable task creation form
   - `resources/js/Components/TaskItem.vue` - reusable task display and inline edit
-
-*** End of README ***
